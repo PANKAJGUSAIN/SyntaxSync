@@ -62,6 +62,28 @@ app.delete("/user", async (req, res) => {
 
 })
 
+// Update specific user
+app.patch("/user", async (req, res) => {
+    try {
+        const { userId, ...updateData } = req.body; // Extract userId and update data from the request body
+
+        // Find the user by ID and update their details
+        const result = await User.findByIdAndUpdate(userId, updateData, { new: true, runValidators: true });
+
+        if (!result) {
+            return res.status(404).send("User not found");
+        }
+
+        res.status(200).send({
+            message: "User updated successfully",
+            updatedUser: result
+        });
+    } catch (err) {
+        console.error("Error occurred while updating user:", err.message);
+        res.status(400).send("Error occurred while updating user");
+    }
+});
+
 
 
 
