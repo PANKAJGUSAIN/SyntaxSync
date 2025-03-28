@@ -5,23 +5,23 @@ const app = express();
 const {connectdb} = require('./config/database');
 const {User} = require('./models/user');
 
+app.use(express.json()); // to convert json in a javascript object 
 
 
 app.post("/signup" , async(req ,res)=>{
-    const userObj = {
-        firstName: "John",
-        lastName: "Doe",
-        emailId: "johndoe@example.com",
-        password: "securepassword123",
-        age: 30,
-        gender: "Male"
-    }
+    console.log(req.body);
 
     // create an instance of the usermodel
-    const user = new User(userObj);
-
-    await user.save();
-    res.send("user added successfully !")
+    const user = new User(req.body);
+    try{
+        const result = await user.save();
+        console.log(result);
+        res.send("user added successfully !")
+    }catch(err){
+        console.log("Error occured when adding user " , err.message);
+    }
+    
+    
 
 
 })
