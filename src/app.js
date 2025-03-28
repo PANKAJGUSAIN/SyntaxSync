@@ -50,6 +50,20 @@ app.get("/feed", async (req, res) => {
 
 })
 
+// delete specific user
+app.delete("/user", async (req, res) => {
+    try {
+        const result = await User.findByIdAndDelete(req.body.userId);
+        res.status(200).send("User Deleted Successfully");
+    } catch (err) {
+        res.status(404).send("Error Ocuured ");
+        console.log("Error occured when fetching  user ", err.message);
+    }
+
+})
+
+
+
 
 // to make sure database is connected before the server starts to listen 
 connectdb()
