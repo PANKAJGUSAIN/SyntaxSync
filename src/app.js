@@ -64,9 +64,16 @@ app.delete("/user", async (req, res) => {
 
 // Update specific user
 app.patch("/user", async (req, res) => {
+    const { userId, ...updateData } = req.body; // Extract userId and update data from the request body
     try {
-        const { userId, ...updateData } = req.body; // Extract userId and update data from the request body
+        const ALLOWED_UPDATES = [
+            "photoUrl", "about", "skills"
+        ]
+        const isUpdateAllowed = Object.keys(updateData).every(k => ALLOWED_UPDATES.includes(k))
 
+        if (!isUpdateAllowed) {
+            throw new Error("Update not Allowed")
+        }
         // Find the user by ID and update their details
         const result = await User.findByIdAndUpdate(userId, updateData, { new: true, runValidators: true });
 
@@ -77,7 +84,8 @@ app.patch("/user", async (req, res) => {
         res.status(200).send({
             message: "User updated successfully",
             updatedUser: result
-        });
+        })
+
     } catch (err) {
         console.error("Error occurred while updating user:", err.message);
         res.status(400).send("Error occurred while updating user");
