@@ -63,8 +63,9 @@ app.delete("/user", async (req, res) => {
 })
 
 // Update specific user
-app.patch("/user", async (req, res) => {
-    const { userId, ...updateData } = req.body; // Extract userId and update data from the request body
+app.patch("/user/:userId", async (req, res) => {
+    const userId = req.params?.userId;
+    const {...updateData} = req.body; // Extract userId and update data from the request body
     try {
         const ALLOWED_UPDATES = [
             "photoUrl", "about", "skills"
