@@ -8,6 +8,8 @@ const bcrypt = require("bcrypt");
 const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
 
+const {userAuth} = require("./middleware/auth");
+
 app.use(express.json()); // to convert json in a javascript object 
 app.use(cookieParser()); //to parse cookie
 
@@ -72,20 +74,12 @@ app.post("/login", async (req, res) => {
 })
 
 // profile api
-app.get("/profile", async (req, res) => {
-    const token = req.cookies?.token;
-
-    if (!token) {
-        return res.status(401).send("Access denied. No token provided.");
-    }
+app.get("/profile", userAuth ,  async (req, res) => {
+    
 
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const user = await User.findById(decoded._id);
 
-        if (!user) {
-            return res.status(404).send("User not found");
-        }
+        const user = req.user ; // as userdetails are attached in the header by the middleware
 
         res.status(200).send({
             message: "Token is valid",
