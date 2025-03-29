@@ -4,15 +4,25 @@ const express = require("express");
 const app = express();
 const { connectdb } = require('./config/database');
 const { User } = require('./models/user');
+const  bcrypt = require("bcrypt");
 
 app.use(express.json()); // to convert json in a javascript object 
 
 // signup api
 app.post("/signup", async (req, res) => {
-    console.log(req.body);
 
+    const {firstName, lastName , emailId , password} = req.body;
+
+    // Validate req.body
+    if (!emailId || !password || !firstName) {
+        return res.status(400).send("Missing required fields: email, password, or name");
+    }
+
+    const passwordHash = await bcrypt.hash(password  , 10);
+
+    console.log(req.body);
     // create an instance of the usermodel
-    const user = new User(req.body);
+    const user = new User({firstName , lastName , emailId , password : passwordHash});
     try {
         const result = await user.save();
         console.log(result);
