@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const validator = require("validator");
 
 const userSchema = mongoose.Schema({
     firstName : {
@@ -18,7 +19,12 @@ const userSchema = mongoose.Schema({
         required:true ,  //a required field
         unique : true ,  // a unique field 
         lowercase:true, // covert the text to lowercase
-        trim:true       // trims all the spaces
+        trim:true,       // trims all the spaces
+        validate(value){
+            if(!validator.isEmail(value)){
+                throw new Error("Invalid Email")
+            }
+        }
     },
     password:{
         type : String , 
@@ -38,7 +44,12 @@ const userSchema = mongoose.Schema({
     },
     photoUrl:{
         type:String,
-        default:"https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.vhv.rs%2Fviewpic%2FihmxhJ_dummy-image-of-user-hd-png-download%2F&psig=AOvVaw3pLIueYEbJL9X3Swr-J-yY&ust=1743322175273000&source=images&cd=vfe&opi=89978449&ved=0CBQQjRxqFwoTCLCR1anrrowDFQAAAAAdAAAAABAE"
+        default:"https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.vhv.rs%2Fviewpic%2FihmxhJ_dummy-image-of-user-hd-png-download%2F&psig=AOvVaw3pLIueYEbJL9X3Swr-J-yY&ust=1743322175273000&source=images&cd=vfe&opi=89978449&ved=0CBQQjRxqFwoTCLCR1anrrowDFQAAAAAdAAAAABAE",
+        validate(value){
+            if(!validator.isURL(value)){
+                throw new Error("Invalid Email")
+            }
+        }
     },
     about:{
         type:String,
