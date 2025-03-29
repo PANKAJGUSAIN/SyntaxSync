@@ -33,6 +33,33 @@ app.post("/signup", async (req, res) => {
 
 })
 
+//login api 
+app.post("/login" , async (req , res) => {
+    const { emailId, password } = req.body;
+
+    // Validate req.body
+    if (!emailId || !password) {
+        return res.status(400).send("Missing required fields: email or password");
+    }
+
+    try {
+        const user = await User.findOne({ emailId });
+        if (!user) {
+            return res.status(404).send("User not found");
+        }
+
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (!isPasswordValid) {
+            return res.status(401).send("Invalid password");
+        }
+
+        res.status(200).send("Login successful");
+    } catch (err) {
+        console.error("Error occurred during login:", err.message);
+        res.status(500).send("Internal server error");
+    }
+})
+
 // find a specific user 
 app.get("/user", async (req, res) => {
     try {
