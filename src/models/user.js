@@ -31,8 +31,8 @@ const userSchema = mongoose.Schema({
     gender:{
         type: String ,
         validate(value){  // by default run only for new document to run it for when updating documents use runValidator:true when querying
-            if(["male" , "female" , "others"].includes(value)){
-                throw new Error("Gender data is not valid")
+            if(!["male" , "female" , "others"].includes(value)){
+            throw new Error("Gender data is not valid");
             }
         }
     },
@@ -46,6 +46,12 @@ const userSchema = mongoose.Schema({
     },
     skills:{
         type:[String],
+        validate: {
+            validator: function (arr) {
+                return arr.length <= 20;
+            },
+            message: "Skills array cannot have more than 20 items"
+        }
     }
 },{timestamps:true});
 //time stamps automatically adds createdAt and updateAt 
