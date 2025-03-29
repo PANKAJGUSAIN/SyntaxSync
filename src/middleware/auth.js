@@ -1,4 +1,5 @@
 const { User } = require("../models/user");
+const jwt = require("jsonwebtoken")
 
 const userAuth = async (req, res, next) => {
     try {
@@ -13,6 +14,7 @@ const userAuth = async (req, res, next) => {
     }
     catch (err) {
         console.log("Error Occured", err.message);
+        res.status(404).send("JWT not provided");
     }
 }
 
