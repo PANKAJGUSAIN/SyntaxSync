@@ -4,25 +4,28 @@ const express = require("express");
 const app = express();
 const { connectdb } = require('./config/database');
 const { User } = require('./models/user');
-const  bcrypt = require("bcrypt");
+const bcrypt = require("bcrypt");
+const cookieParser = require("cookie-parser");
+const jwt = require("jsonwebtoken");
 
 app.use(express.json()); // to convert json in a javascript object 
+app.use(cookieParser()); //to parse cookie
 
 // signup api
 app.post("/signup", async (req, res) => {
 
-    const {firstName, lastName , emailId , password} = req.body;
+    const { firstName, lastName, emailId, password } = req.body;
 
     // Validate req.body
     if (!emailId || !password || !firstName) {
         return res.status(400).send("Missing required fields: email, password, or name");
     }
 
-    const passwordHash = await bcrypt.hash(password  , 10);
+    const passwordHash = await bcrypt.hash(password, 10);
 
     console.log(req.body);
     // create an instance of the usermodel
-    const user = new User({firstName , lastName , emailId , password : passwordHash});
+    const user = new User({ firstName, lastName, emailId, password: passwordHash });
     try {
         const result = await user.save();
         console.log(result);
@@ -34,7 +37,7 @@ app.post("/signup", async (req, res) => {
 })
 
 //login api 
-app.post("/login" , async (req , res) => {
+app.post("/login", async (req, res) => {
     const { emailId, password } = req.body;
 
     // Validate req.body
@@ -53,12 +56,47 @@ app.post("/login" , async (req , res) => {
             return res.status(401).send("Invalid password");
         }
 
+        // generate the token
+        const token = await jwt.sign(
+            { _id: user.id },
+            process.env.JWT_SECRET,
+            { expiresIn: "1h" }
+        );
+        res.cookie("token", token);
+
         res.status(200).send("Login successful");
     } catch (err) {
         console.error("Error occurred during login:", err.message);
         res.status(500).send("Internal server error");
     }
 })
+
+// profile api
+app.get("/profile", async (req, res) => {
+    const token = req.cookies?.token;
+
+    if (!token) {
+        return res.status(401).send("Access denied. No token provided.");
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await User.findById(decoded._id);
+
+        if (!user) {
+            return res.status(404).send("User not found");
+        }
+
+        res.status(200).send({
+            message: "Token is valid",
+            userProfile: user
+        });
+    } catch (err) {
+        console.error("Error occurred while verifying token:", err.message);
+        res.status(400).send("Invalid token");
+    }
+});
+
 
 // find a specific user 
 app.get("/user", async (req, res) => {
@@ -102,7 +140,7 @@ app.delete("/user", async (req, res) => {
 // Update specific user
 app.patch("/user/:userId", async (req, res) => {
     const userId = req.params?.userId;
-    const {...updateData} = req.body; // Extract userId and update data from the request body
+    const { ...updateData } = req.body; // Extract userId and update data from the request body
     try {
         const ALLOWED_UPDATES = [
             "photoUrl", "about", "skills"
